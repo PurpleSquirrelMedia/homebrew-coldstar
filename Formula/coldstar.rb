@@ -33,6 +33,7 @@ class Coldstar < Formula
     libexec.install "flash_usb.py"
     libexec.install "upgrade_wallet.py"
     libexec.install "local_requirements.txt"
+    libexec.install "python_signer_example.py"
 
     if (buildpath/"secure_signer").exist?
       libexec.install "secure_signer"
