@@ -9,9 +9,11 @@ class Coldstar < Formula
   head "https://github.com/PurpleSquirrelMedia/coldstar-distro-build-mc.git", branch: "main"
 
   depends_on "rust" => :build
+  depends_on "maturin" => :build
   depends_on "libsodium"
   depends_on "python@3.12"
 
+  # Pure Python packages (no native code)
   resource "aiofiles" do
     url "https://files.pythonhosted.org/packages/41/c3/534eac40372d8ee36ef40df62ec129bee4fdb5ad9706e58a29be53b2c970/aiofiles-25.1.0.tar.gz"
     sha256 "a8d728f0a29de45dc521f18f07297428d56992a742f0cd2701ba86e44d23d5b2"
@@ -30,11 +32,6 @@ class Coldstar < Formula
   resource "certifi" do
     url "https://files.pythonhosted.org/packages/a2/8c/58f469717fa48465e4a50c014a0400602d3c437d7c0c468e17ada824da3a/certifi-2025.11.12.tar.gz"
     sha256 "d8ab5478f2ecd78af242878415affce761ca6bc54a22a27e026d7c25357c3316"
-  end
-
-  resource "cffi" do
-    url "https://files.pythonhosted.org/packages/eb/56/b1ba7935a17738ae8453301356628e8147c79dbb825bcbc73dc7401f9846/cffi-2.0.0.tar.gz"
-    sha256 "44d1b5909021139fe36001ae048dbdde8214afa20200eda0f64c068cac5d5529"
   end
 
   resource "construct" do
@@ -117,14 +114,9 @@ class Coldstar < Formula
     sha256 "73ff50c7c0c1c77c8243079283f4edb376f0f6442433aecb8ce7e6d0b92d1fe4"
   end
 
-  resource "solana" do
-    url "https://files.pythonhosted.org/packages/22/bc/63bfece15288ed5557ea5b8d21cac401069f8b8f0382e6a959f6f3b8547b/solana-0.36.10.tar.gz"
-    sha256 "03641af70ea25648675e818b87f103466e12ffe726404e675077c403cc4057b5"
-  end
-
-  resource "solders" do
-    url "https://files.pythonhosted.org/packages/66/25/80a81bb3dc4c70329dd0016edbdfbf2e8d8300a98ab9cd1a6ea0266bda7c/solders-0.27.1.tar.gz"
-    sha256 "7d8a24ad2f193afcdc02d6f3975917a7358b0f0ab7f4b3695b135ff2008222c8"
+  resource "sniffio" do
+    url "https://files.pythonhosted.org/packages/a2/87/a6771e1546d97e7e041b6ae58d80074f81b7d5121207425c964ddf5cfdbd/sniffio-1.3.1.tar.gz"
+    sha256 "f4324edc670a0f49750a81b895f35c3adb843cca46f0530f79fc1babb23789dc"
   end
 
   resource "typing-extensions" do
@@ -142,15 +134,24 @@ class Coldstar < Formula
     sha256 "82544de02076bafba038ce055ee6412d68da13ab47f0c60cab827346de828dee"
   end
 
+  # Native extension packages - need cffi for pynacl
+  resource "cffi" do
+    url "https://files.pythonhosted.org/packages/fc/97/c783634659c2920c3fc70419e3af40972dbaf758daa229a7d6ea6135c90d/cffi-1.17.1.tar.gz"
+    sha256 "1c39c6016c32bc48dd54561950ebd6836e1670f2ae46128f67cf49e789c52824"
+  end
+
   def install
     # Build and install Rust secure_signer component
     cd "secure_signer" do
       system "cargo", "install", *std_cargo_args
     end
 
-    # Create virtualenv and install Python dependencies
+    # Create virtualenv and install pure Python dependencies
     venv = virtualenv_create(libexec, "python3.12")
-    venv.pip_install resources
+    venv.pip_install resources.reject { |r| ["solana", "solders"].include?(r.name) }
+
+    # Install solana and solders using pip (uses pre-built wheels)
+    system libexec/"bin/pip", "install", "solana==0.36.10", "solders==0.27.1"
 
     # Install application files to libexec
     libexec.install "main.py"
