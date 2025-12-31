@@ -2,17 +2,29 @@
 
 This is the official Homebrew tap for [ColdStar](https://github.com/PurpleSquirrelMedia/coldstar-distro-build-mc) - a CLI-first cold wallet system that transforms USB drives into disposable, RAM-only signing mediums.
 
-## Installation
+## Installation Options
+
+### Option 1: Standalone Executable (Recommended)
+
+No dependencies required - just download and run:
+
+```bash
+brew tap PurpleSquirrelMedia/coldstar
+brew install --cask coldstar-standalone
+```
+
+### Option 2: From Source (requires Python & Rust)
 
 ```bash
 brew tap PurpleSquirrelMedia/coldstar
 brew install coldstar
 ```
 
-Or install directly:
+### Option 3: Docker Version
 
 ```bash
-brew install PurpleSquirrelMedia/coldstar/coldstar
+brew tap PurpleSquirrelMedia/coldstar
+brew install --cask coldstar-docker
 ```
 
 ## Usage
@@ -23,9 +35,26 @@ After installation, run:
 coldstar
 ```
 
+## What's Included
+
+| Package | Description | Dependencies |
+|---------|-------------|--------------|
+| `coldstar-standalone` | 21MB self-contained binary | None |
+| `coldstar` | Build from source | Python 3.12, Rust |
+| `coldstar-docker` | Docker container version | Docker |
+
+## Security Features
+
+- Rust secure memory (mlock)
+- Argon2id key derivation (64MB, 3 iterations)
+- AES-256-GCM encryption
+- Ed25519 signing
+- Auto-zeroization after use
+- Private keys never in Python memory
+
 ## Requirements
 
-- macOS or Linux
+- macOS (Apple Silicon or Intel)
 - USB drive for cold wallet operations
 
 ## What is ColdStar?
